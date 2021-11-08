@@ -1,0 +1,6 @@
+* Simple project to scrape product information off the Nomatic site
+
+I think they have a fantastic range of products and this is just an
+experiment of a fan of the company and product, and a hobby project. 
+
+Reference URL: https://www.nomatic.com/products/the-nomatic-travel-pack
