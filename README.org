@@ -8,3 +8,13 @@ Reference URL: https://www.nomatic.com/products/the-nomatic-travel-pack
 This mini project was inspired by a question posed by the awesome [[https://www.linkedin.com/in/ACoAAAMPtKQBfJ_F_1xFLWVhbtyXlobTG8VSRC8/?lipi=urn%3Ali%3Apage%3Ad_flagship3_feed%3BHxRfQdHHROusJg5eXOuQTQ%3D%3D][Max
 Humber]] via Linked in.
 
+
+* Overview / Tasks 
+
+- beginnings of a function to pull in all the products on multiple pages
+  and pull in key descriptions for individual pages. This
+- [ ] individual functions have to be plugged into a map function for
+  all the products.
+- [[./webscrapr-nomatic.R][Main script]].
+- [ ] table formation and info extract need to be fleshed out.
+
