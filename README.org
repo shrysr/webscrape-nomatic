@@ -4,3 +4,7 @@ I think they have a fantastic range of products and this is just an
 experiment of a fan of the company and product, and a hobby project. 
 
 Reference URL: https://www.nomatic.com/products/the-nomatic-travel-pack
+
+This mini project was inspired by a question posed by the awesome [[https://www.linkedin.com/in/ACoAAAMPtKQBfJ_F_1xFLWVhbtyXlobTG8VSRC8/?lipi=urn%3Ali%3Apage%3Ad_flagship3_feed%3BHxRfQdHHROusJg5eXOuQTQ%3D%3D][Max
+Humber]] via Linked in.
+
