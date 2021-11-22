@@ -5,16 +5,219 @@ experiment of a fan of the company and product, and a hobby project.
 
 Reference URL: https://www.nomatic.com/products/the-nomatic-travel-pack
 
-This mini project was inspired by a question posed by the awesome [[https://www.linkedin.com/in/ACoAAAMPtKQBfJ_F_1xFLWVhbtyXlobTG8VSRC8/?lipi=urn%3Ali%3Apage%3Ad_flagship3_feed%3BHxRfQdHHROusJg5eXOuQTQ%3D%3D][Max
-Humber]] via Linked in.
+This mini project was inspired by a question posed by the awesome [[https://www.linkedin.com/in/maxhumber/][Max Humber]] via Linked in.
 
+* Environment
 
-* Overview / Tasks 
+Renv can be used to quickly install the required libraries. Use =renv::install()=
+
+* General plan/tasks
 
 - beginnings of a function to pull in all the products on multiple pages
   and pull in key descriptions for individual pages. This
-- [ ] individual functions have to be plugged into a map function for
-  all the products.
-- [[./webscrapr-nomatic.R][Main script]].
-- [ ] table formation and info extract need to be fleshed out.
+- [X] individual functions have to be plugged into a map function for
+  obtaining all the product URL's
+- [ ] Product URL's have to be reviewed since there are some spurious
+  products like insurance 
+- [ ] table formation and info extract need to be fleshed out and
+  improved
+- [ ] function to be created for individual product feature extraction
 
+
+* Code demo
+
+** Load Libraries and Source functions
+
+#+BEGIN_SRC R :session nomatic
+## Loading Libraries ---
+library(dplyr)
+library(rvest)
+library(purrr)
+library(fs)
+library(xopen)
+library(furrr)
+library(stringr)
+
+## Source functions
+source("functions.R")
+
+#+END_SRC
+
+** Init Variables and URL
+
+#+BEGIN_SRC R :session nomatic 
+## Prefix URLs
+all_products_prefix_url = "https://www.nomatic.com/collections/all-products?page="
+individual_product_prefix_url = "https://www.nomatic.com/products/"
+
+
+## Number of pages to scrape 6
+## The number of pages was manually obtained by inspection
+page_range <- seq(1:6)
+
+#+END_SRC
+
+** Obtain All product URLs
+
+#+BEGIN_SRC R :session nomatic
+all_product_url_tbl <- page_range %>% map_df(
+                                        ~ consolidate_all_links_on_a_page(
+  all_products_prefix_url = all_products_prefix_url,
+  page_no = .x,
+  individual_product_prefix_url))
+
+all_product_url_tbl
+#+END_SRC
+
+#+RESULTS:
+| gift-card                                                   | https://www.nomatic.com/products/gift-card                                                   |
+| wallet                                                      | https://www.nomatic.com/products/wallet                                                      |
+| watch                                                       | https://www.nomatic.com/products/watch                                                       |
+| tech-case                                                   | https://www.nomatic.com/products/tech-case                                                   |
+| watch-band                                                  | https://www.nomatic.com/products/watch-band                                                  |
+| backpack-bundle                                             | https://www.nomatic.com/products/backpack-bundle                                             |
+| nomatic-planner                                             | https://www.nomatic.com/products/nomatic-planner                                             |
+| staedtler-lumocolor-correctable-whiteboard-pen              | https://www.nomatic.com/products/staedtler-lumocolor-correctable-whiteboard-pen              |
+| shoe-cube                                                   | https://www.nomatic.com/products/shoe-cube                                                   |
+| charcoal-nomatic-tee                                        | https://www.nomatic.com/products/charcoal-nomatic-tee                                        |
+| apparel-sleeve                                              | https://www.nomatic.com/products/apparel-sleeve                                              |
+| gray-mountain-city-nomatic-tee                              | https://www.nomatic.com/products/gray-mountain-city-nomatic-tee                              |
+| nomatic-notebook                                            | https://www.nomatic.com/products/nomatic-notebook                                            |
+| packing-cubes                                               | https://www.nomatic.com/products/packing-cubes                                               |
+| nomatic-waist-straps                                        | https://www.nomatic.com/products/nomatic-waist-straps                                        |
+| camera-pack                                                 | https://www.nomatic.com/products/camera-pack                                                 |
+| nomatic-travel-bag                                          | https://www.nomatic.com/products/nomatic-travel-bag                                          |
+| laundry-bag                                                 | https://www.nomatic.com/products/laundry-bag                                                 |
+| nomatic-shirt-organizer                                     | https://www.nomatic.com/products/nomatic-shirt-organizer                                     |
+| nomatic-travel-bag-full-bundle                              | https://www.nomatic.com/products/nomatic-travel-bag-full-bundle                              |
+| the-nomatic-backpack                                        | https://www.nomatic.com/products/the-nomatic-backpack                                        |
+| the-nomatic-travel-pack                                     | https://www.nomatic.com/products/the-nomatic-travel-pack                                     |
+| ultimate-travel-bundle                                      | https://www.nomatic.com/products/ultimate-travel-bundle                                      |
+| nomatic-travel-pack-bundle                                  | https://www.nomatic.com/products/nomatic-travel-pack-bundle                                  |
+| nomatic-messenger-bag                                       | https://www.nomatic.com/products/nomatic-messenger-bag                                       |
+| nomatic-garment-bag                                         | https://www.nomatic.com/products/nomatic-garment-bag                                         |
+| nomatic-toiletry-bag                                        | https://www.nomatic.com/products/nomatic-toiletry-bag                                        |
+| nomatic-                                                    | https://www.nomatic.com/products/nomatic-                                                    |
+| carry-on-classic                                            | https://www.nomatic.com/products/carry-on-classic                                            |
+| carry-on-pro                                                | https://www.nomatic.com/products/carry-on-pro                                                |
+| check-in                                                    | https://www.nomatic.com/products/check-in                                                    |
+| cube-pack                                                   | https://www.nomatic.com/products/cube-pack                                                   |
+| accessory-case                                              | https://www.nomatic.com/products/accessory-case                                              |
+| memory-card-case                                            | https://www.nomatic.com/products/memory-card-case                                            |
+| filter-case                                                 | https://www.nomatic.com/products/filter-case                                                 |
+| battery-case                                                | https://www.nomatic.com/products/battery-case                                                |
+| rain-fly                                                    | https://www.nomatic.com/products/rain-fly                                                    |
+| camera-pack-waist-strap                                     | https://www.nomatic.com/products/camera-pack-waist-strap                                     |
+| messenger-laptop-bag-replacement-strap                      | https://www.nomatic.com/products/messenger-laptop-bag-replacement-strap                      |
+| toiletry-bag-                                               | https://www.nomatic.com/products/toiletry-bag-                                               |
+| carry-on-pro-zipper-and-door-tsa-lock-replacement-kit       | https://www.nomatic.com/products/carry-on-pro-zipper-and-door-tsa-lock-replacement-kit       |
+| carry-on-pro-zip-out-divider-wall-replacement-kit           | https://www.nomatic.com/products/carry-on-pro-zip-out-divider-wall-replacement-kit           |
+| carry-on-pro-door-plate-door-latch-replacement-kit          | https://www.nomatic.com/products/carry-on-pro-door-plate-door-latch-replacement-kit          |
+| tech-case-strap-replacement-kit                             | https://www.nomatic.com/products/tech-case-strap-replacement-kit                             |
+| check-in-                                                   | https://www.nomatic.com/products/check-in-                                                   |
+| check-in-compression-panel-replacement-kit                  | https://www.nomatic.com/products/check-in-compression-panel-replacement-kit                  |
+| check-in-hinomoto-right-wheels-replacement-kit              | https://www.nomatic.com/products/check-in-hinomoto-right-wheels-replacement-kit              |
+| check-in-hinomoto-left-wheels-replacement-kit               | https://www.nomatic.com/products/check-in-hinomoto-left-wheels-replacement-kit               |
+| carry-on-carry-on-pro-compression-panel-replacement-kit     | https://www.nomatic.com/products/carry-on-carry-on-pro-compression-panel-replacement-kit     |
+| carry-on-carry-on-pro-                                      | https://www.nomatic.com/products/carry-on-carry-on-pro-                                      |
+| carry-on-carry-on-pro-hinomoto-right-wheels-replacement-kit | https://www.nomatic.com/products/carry-on-carry-on-pro-hinomoto-right-wheels-replacement-kit |
+| carry-on-carry-on-pro-hinomoto-left-wheels-replacement-kit  | https://www.nomatic.com/products/carry-on-carry-on-pro-hinomoto-left-wheels-replacement-kit  |
+| universal-hinomoto-grab-handle-replacement-kit              | https://www.nomatic.com/products/universal-hinomoto-grab-handle-replacement-kit              |
+| carry-on-check-in-tsa-zipper-lock-replacement-kit           | https://www.nomatic.com/products/carry-on-check-in-tsa-zipper-lock-replacement-kit           |
+| camera-pack-cube-pack                                       | https://www.nomatic.com/products/camera-pack-cube-pack                                       |
+| camera-pack-bundle                                          | https://www.nomatic.com/products/camera-pack-bundle                                          |
+| replacement-sunglass-case                                   | https://www.nomatic.com/products/replacement-sunglass-case                                   |
+| tsa-lock                                                    | https://www.nomatic.com/products/tsa-lock                                                    |
+| replacement-chest-strap                                     | https://www.nomatic.com/products/replacement-chest-strap                                     |
+| large-divider-set                                           | https://www.nomatic.com/products/large-divider-set                                           |
+| small-divider-set                                           | https://www.nomatic.com/products/small-divider-set                                           |
+| routeins                                                    | https://www.nomatic.com/products/routeins                                                    |
+| navigator-travel-backpack-                                  | https://www.nomatic.com/products/navigator-travel-backpack-                                  |
+| navigator-carry-on-                                         | https://www.nomatic.com/products/navigator-carry-on-                                         |
+| navigator-backpack-                                         | https://www.nomatic.com/products/navigator-backpack-                                         |
+| navigator-sling-                                            | https://www.nomatic.com/products/navigator-sling-                                            |
+| mulberry-protection-                                        | https://www.nomatic.com/products/mulberry-protection-                                        |
+| navigator-collapsible-backpack                              | https://www.nomatic.com/products/navigator-collapsible-backpack                              |
+| navigator-tech-organizer                                    | https://www.nomatic.com/products/navigator-tech-organizer                                    |
+| navigator-rain-cover                                        | https://www.nomatic.com/products/navigator-rain-cover                                        |
+| vacuum-bag-                                                 | https://www.nomatic.com/products/vacuum-bag-                                                 |
+| navigator-travel-backpack-bundle                            | https://www.nomatic.com/products/navigator-travel-backpack-bundle                            |
+| navigator-roller-bundle                                     | https://www.nomatic.com/products/navigator-roller-bundle                                     |
+| navigator-everyday-bundle                                   | https://www.nomatic.com/products/navigator-everyday-bundle                                   |
+| navigator-sling-bundle                                      | https://www.nomatic.com/products/navigator-sling-bundle                                      |
+| sanitizing-spray                                            | https://www.nomatic.com/products/sanitizing-spray                                            |
+| face-mask                                                   | https://www.nomatic.com/products/face-mask                                                   |
+| mask-lanyard                                                | https://www.nomatic.com/products/mask-lanyard                                                |
+| mask-pouch                                                  | https://www.nomatic.com/products/mask-pouch                                                  |
+| face-mask-bundle                                            | https://www.nomatic.com/products/face-mask-bundle                                            |
+| ultimate-all-day-armor-bundle                               | https://www.nomatic.com/products/ultimate-all-day-armor-bundle                               |
+| weekend-vibes-bundle                                        | https://www.nomatic.com/products/weekend-vibes-bundle                                        |
+| wallet-promo                                                | https://www.nomatic.com/products/wallet-promo                                                |
+| navigator-sling-                                            | https://www.nomatic.com/products/navigator-sling-                                            |
+| mulberry-protection                                         | https://www.nomatic.com/products/mulberry-protection                                         |
+| mulberry-protection-                                        | https://www.nomatic.com/products/mulberry-protection-                                        |
+
+
+** TODO Obtaining individual product features
+
+Using a single product url for initial exploration
+
+#+BEGIN_SRC R  :session nomatic
+url_test <- all_product_url_tbl[2,2] %>% pull
+
+html <- read_html(url_test)
+
+print(url_test)
+#+END_SRC
+
+#+RESULTS:
+: https://www.nomatic.com/products/wallet
+
+
+Main product features :
+
+#+BEGIN_SRC R :session nomatic
+main_product_features <- html %>%
+  html_nodes(".product-features") %>%
+  html_nodes("li") %>%
+  html_text() %>%
+  str_trim() %>%
+  unique()
+#+END_SRC
+
+#+RESULTS:
+| cash pocket       |
+| durable materials |
+| easy access       |
+| holds 4-14 cards  |
+| pull tab          |
+| slim profile      |
+
+
+
+#+BEGIN_SRC R :session nomatic
+### Carousel details ----
+carousel_details <- html %>%
+  html_nodes(".accordion") %>%
+  html_nodes(".accordion_body") %>%
+  html_text() %>%
+  str_trim() %>%
+  unique() %>% 
+  tibble("detailed_features" = .)
+
+### Carousel headers
+carousel_feature_names <- html %>%
+  html_nodes(".accordion") %>%
+  html_nodes(".accordion_head") %>%
+  html_text() %>%
+  str_trim() %>%
+  unique() %>% 
+  tibble("feature_names" = .) 
+
+all_carousel_details_tbl <-
+  bind_cols(carousel_feature_names) %>%
+  bind_cols(carousel_details)
+#+END_SRC
+
+#+RESULTS:
+| Description | With the NOMATIC Wallet you get the best of both worlds: a slim profile and easy access to all of your cards. You also have room for cash and a key. Classy, professional, casual, or active — the NOMATIC wallet is right for any situation. Choose your favorite color or buy multiple colors to match your style. |

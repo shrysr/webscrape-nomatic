@@ -1,0 +1,129 @@
+---
+# YAML header created by ox-ravel
+author: Shreyas Ragavan
+---
+
+# Simple project to scrape product information off the Nomatic site
+
+I think they have a fantastic range of products and this is just an
+experiment of a fan of the company and product, and a hobby project. 
+
+Reference URL: <https://www.nomatic.com/products/the-nomatic-travel-pack>
+
+This mini project was inspired by a question posed by the awesome [Max Humber](https://www.linkedin.com/in/maxhumber/) via Linked in.
+
+
+# Environment
+
+Renv can be used to quickly install the required libraries. Use `renv::install()`
+
+
+# General plan/tasks
+
+-   beginnings of a function to pull in all the products on multiple pages
+    and pull in key descriptions for individual pages. This
+-   [X] individual functions have to be plugged into a map function for
+    obtaining all the product URL's
+-   [ ] Product URL's have to be reviewed since there are some spurious
+    products like insurance
+-   [ ] table formation and info extract need to be fleshed out and
+    improved
+-   [ ] function to be created for individual product feature extraction
+
+
+# Code demo
+
+
+## Load Libraries and Source functions
+
+```{r   }
+## Loading Libraries ---
+library(dplyr)
+library(rvest)
+library(purrr)
+library(fs)
+library(xopen)
+library(furrr)
+library(stringr)
+
+## Source functions
+source("functions.R")
+ 
+```
+
+
+## Init Variables and URL
+
+```{r   }
+## Prefix URLs
+all_products_prefix_url = "https://www.nomatic.com/collections/all-products?page="
+individual_product_prefix_url = "https://www.nomatic.com/products/"
+
+
+## Number of pages to scrape 6
+## The number of pages was manually obtained by inspection
+page_range <- seq(1:6)
+ 
+```
+
+
+## Obtain All product URLs
+
+```{r   }
+all_product_url_tbl <- page_range %>% map_df(
+                                        ~ consolidate_all_links_on_a_page(
+  all_products_prefix_url = all_products_prefix_url,
+  page_no = .x,
+  individual_product_prefix_url))
+
+all_product_url_tbl 
+```
+
+
+## TODO Obtaining individual product features
+
+Using a single product url for initial exploration
+
+```{r   }
+url_test <- all_product_url_tbl[2,2] %>% pull
+
+html <- read_html(url_test)
+
+print(url_test) 
+```
+
+Main product features :
+
+```{r   }
+main_product_features <- html %>%
+  html_nodes(".product-features") %>%
+  html_nodes("li") %>%
+  html_text() %>%
+  str_trim() %>%
+  unique() 
+```
+
+```{r   }
+### Carousel details ----
+carousel_details <- html %>%
+  html_nodes(".accordion") %>%
+  html_nodes(".accordion_body") %>%
+  html_text() %>%
+  str_trim() %>%
+  unique() %>% 
+  tibble("detailed_features" = .)
+
+### Carousel headers
+carousel_feature_names <- html %>%
+  html_nodes(".accordion") %>%
+  html_nodes(".accordion_head") %>%
+  html_text() %>%
+  str_trim() %>%
+  unique() %>% 
+  tibble("feature_names" = .) 
+
+all_carousel_details_tbl <-
+  bind_cols(carousel_feature_names) %>%
+  bind_cols(carousel_details) 
+```
+

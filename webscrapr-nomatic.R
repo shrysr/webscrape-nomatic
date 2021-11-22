@@ -7,11 +7,33 @@ library(xopen)
 library(furrr)
 library(stringr)
 
-## Prefix URL
-prefix_url = "https://www.nomatic.com/collections/all-products?page="
+## Source functions
+source("functions.R")
 
-## Number of pages to scrape 
+
+## Prefix URL
+all_products_prefix_url = "https://www.nomatic.com/collections/all-products?page="
+individual_product_prefix_url = "https://www.nomatic.com/products/"
+
+
+## Number of pages to scrape
+## The number of pages was manually obtained by inspection
 page_range <- seq(1:6)
+
+
+#########################################################
+
+all_product_url_tbl <- page_range %>% map_df(~ consolidate_all_links_on_a_page(
+                        all_products_prefix_url = all_products_prefix_url,
+                        page_no = .x,
+                        individual_product_prefix_url = individual_product_prefix_url ))
+
+
+
+
+############################################################################
+### Obtaininng individual product features
+################################
 
 ## We'll start with a limited number of products: 
 ## - https://www.nomatic.com/products/the-nomatic-travel-pack
@@ -20,7 +42,6 @@ page_range <- seq(1:6)
 ## - https://www.nomatic.com/products/nomatic-messenger-bag
 
 
-## Constructing a tibble parsing product name from the above URL's
 
 url_list <- c("https://www.nomatic.com/products/the-nomatic-travel-pack",
 "https://www.nomatic.com/products/nomatic-toiletry-bag",
@@ -30,45 +51,21 @@ url_list <- c("https://www.nomatic.com/products/the-nomatic-travel-pack",
 
 product_url_tbl <-tibble(product_url = url_list)
 
+
+## Constructing a tibble parsing product name from the above URL's
 conditioned_product_url_tbl <-
   product_url_tbl %>%
   mutate(product_name = str_extract(product_url, "([^/]+$)")) %>%
-  ## mutate(product_name = str_replace_all(product_name, "-", " ")) %>%
   select(product_name, product_url)
 
 
-### Obtain all product links in a page ----
-## We have
-url_generic <- "https://www.nomatic.com/collections/all-products/"
-html_generic <- read_html(url_generic)
 
-## FIXME Using str_match to extract from xml nodes has to be improved
-html_generic %>%
-  html_nodes("#PageContainer") %>%
-  html_nodes("#MainContent") %>%
-  html_nodes("#shopify-section-collection-template") %>%
-  html_nodes("#Collection") %>%
-  html_nodes(".row") %>%
-  html_nodes(".col-60") %>%
-  html_nodes(".product-items") %>%
-  html_nodes(".product-item-hover") %>%
-  str_match("/products/[a-zA-z|-]+") %>%
-  str_trim() 
-
-
-
-## TODO Map above function to 6 pages to obtain All products
-## we know there are 6 pages
-page_range %>% map_tbl(~ consolidate_all_links_on_a_page(
-                         prefix_url = prefix_url,
-                         page_no = .x))
-
-url <- "https://www.nomatic.com/collections/all-products?page={2}"
-
+### OBTAINING INDIVIDUAL PRODUCT FEATURES
 ## Working on a single product URL ----
 url_test <- conditioned_product_url_tbl[1,2] %>% pull
 
-html <- read_html(url_test)
+html <- read_html(url)
+
 
 ### Product features ----
 main_product_features <- html %>%
@@ -100,3 +97,6 @@ carousel_feature_names <- html %>%
 all_carousel_details_tbl <-
   bind_cols(carousel_feature_names) %>%
   bind_cols(carousel_details)
+
+
+
